@@ -14,7 +14,6 @@ export default function Home() {
   const [newTodo, setNewTodo] = useState('');
   const [taskDate, setTaskDate] = useState('');
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [editingPriority, setEditingPriority] = useState<string | null>(null);
   
   // Use Supabase hook for todos
   const { todos, loading, error, addTodo: addTodoToDb, updateTodo } = useTodos();
@@ -74,27 +73,6 @@ export default function Home() {
     }
   };
 
-  const updatePriority = async (id: string, priority: 'high' | 'medium' | 'low') => {
-    await updateTodo(id, { priority });
-  };
-
-  const getPriorityColor = (priority: 'high' | 'medium' | 'low') => {
-    switch (priority) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-yellow-500';
-      case 'low': return 'bg-green-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const getPriorityTextColor = (priority: 'high' | 'medium' | 'low') => {
-    switch (priority) {
-      case 'high': return 'text-red-800';
-      case 'medium': return 'text-yellow-800';
-      case 'low': return 'text-green-800';
-      default: return 'text-gray-800';
-    }
-  };
 
   const getTodosForDay = (date: Date) => {
     return todos.filter(todo => 
@@ -135,20 +113,6 @@ export default function Home() {
   const weekDays = getWeekDays(currentWeek);
   const activeTodo = activeId ? todos.find(todo => todo.id === activeId) : null;
 
-  // Close priority dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (editingPriority && !target.closest('[data-priority-dropdown]')) {
-        setEditingPriority(null);
-      }
-    };
-    
-    if (editingPriority) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
-  }, [editingPriority]);
 
   // Show loading state
   if (loading) {
@@ -214,7 +178,6 @@ export default function Home() {
           </div>
           {/* Debug info - hidden on mobile */}
           <div className="hidden md:block mt-4 p-2 bg-gray-100 rounded text-sm">
-            <div>Editing Priority: {editingPriority || 'None'}</div>
             <div>Total Todos: {todos.length}</div>
             <div>Unscheduled: {getUnscheduledTodos().length}</div>
           </div>
@@ -285,11 +248,6 @@ export default function Home() {
                     day={day}
                     todos={getTodosForDay(day)}
                     onToggle={toggleTodo}
-                    onUpdatePriority={updatePriority}
-                    getPriorityColor={getPriorityColor}
-                    getPriorityTextColor={getPriorityTextColor}
-                    editingPriority={editingPriority}
-                    setEditingPriority={setEditingPriority}
                   />
                 </div>
               ))}
@@ -300,20 +258,12 @@ export default function Home() {
           <DroppableUnscheduled
             todos={getUnscheduledTodos()}
             onToggle={toggleTodo}
-            onUpdatePriority={updatePriority}
-            getPriorityColor={getPriorityColor}
-            getPriorityTextColor={getPriorityTextColor}
-            editingPriority={editingPriority}
-            setEditingPriority={setEditingPriority}
           />
 
           <DragOverlay>
             {activeTodo ? (
               <div className="bg-white rounded-lg shadow-xl border-2 border-blue-300 p-3 opacity-90">
-                <div className="flex items-center space-x-2">
-                  <div className={`w-3 h-3 rounded-full ${getPriorityColor(activeTodo.priority)}`}></div>
-                  <span className="text-sm font-medium text-gray-800">{activeTodo.text}</span>
-                </div>
+                <span className="text-sm font-medium text-gray-800">{activeTodo.text}</span>
               </div>
             ) : null}
           </DragOverlay>
@@ -326,21 +276,11 @@ export default function Home() {
 function DroppableDay({
   day,
   todos,
-  onToggle,
-  onUpdatePriority,
-  getPriorityColor,
-  getPriorityTextColor,
-  editingPriority,
-  setEditingPriority
+  onToggle
 }: {
   day: Date;
   todos: Todo[];
   onToggle: (id: string) => void;
-  onUpdatePriority: (id: string, priority: 'high' | 'medium' | 'low') => void;
-  getPriorityColor: (priority: 'high' | 'medium' | 'low') => string;
-  getPriorityTextColor: (priority: 'high' | 'medium' | 'low') => string;
-  editingPriority: string | null;
-  setEditingPriority: (id: string | null) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `day-${day.toDateString()}`,
@@ -365,12 +305,7 @@ function DroppableDay({
             key={todo.id}
             todo={todo}
             onToggle={onToggle}
-            onUpdatePriority={onUpdatePriority}
-            getPriorityColor={getPriorityColor}
-            getPriorityTextColor={getPriorityTextColor}
             targetDate={day}
-            editingPriority={editingPriority}
-            setEditingPriority={setEditingPriority}
           />
         ))}
       </SortableContext>
@@ -381,21 +316,11 @@ function DroppableDay({
 function SortableTask({ 
   todo, 
   onToggle, 
-  onUpdatePriority, 
-  getPriorityColor, 
-  getPriorityTextColor,
-  targetDate,
-  editingPriority,
-  setEditingPriority
+  targetDate
 }: {
   todo: Todo;
   onToggle: (id: string) => void;
-  onUpdatePriority: (id: string, priority: 'high' | 'medium' | 'low') => void;
-  getPriorityColor: (priority: 'high' | 'medium' | 'low') => string;
-  getPriorityTextColor: (priority: 'high' | 'medium' | 'low') => string;
   targetDate: Date;
-  editingPriority: string | null;
-  setEditingPriority: (id: string | null) => void;
 }) {
   const {
     attributes,
@@ -443,17 +368,6 @@ function SortableTask({
             >
               {todo.text}
             </div>
-            {/* Hide priority button on mobile, show on desktop */}
-            <div className="hidden md:flex items-center justify-between mt-0 w-full">
-            <PriorityButton
-              todo={todo}
-              editingPriority={editingPriority}
-              setEditingPriority={setEditingPriority}
-              onUpdatePriority={onUpdatePriority}
-              getPriorityColor={getPriorityColor}
-              getPriorityTextColor={getPriorityTextColor}
-            />
-          </div>
         </div>
       </div>
     </div>
@@ -462,20 +376,10 @@ function SortableTask({
 
 function UnscheduledTask({
   todo,
-  onToggle,
-  onUpdatePriority,
-  getPriorityColor,
-  getPriorityTextColor,
-  editingPriority,
-  setEditingPriority
+  onToggle
 }: {
   todo: Todo;
   onToggle: (id: string) => void;
-  onUpdatePriority: (id: string, priority: 'high' | 'medium' | 'low') => void;
-  getPriorityColor: (priority: 'high' | 'medium' | 'low') => string;
-  getPriorityTextColor: (priority: 'high' | 'medium' | 'low') => string;
-  editingPriority: string | null;
-  setEditingPriority: (id: string | null) => void;
 }) {
   const {
     attributes,
@@ -523,17 +427,6 @@ function UnscheduledTask({
           >
             {todo.text}
           </div>
-          {/* Hide priority button on mobile, show on desktop */}
-          <div className="hidden md:flex items-center justify-between mt-0">
-            <PriorityButton
-              todo={todo}
-              editingPriority={editingPriority}
-              setEditingPriority={setEditingPriority}
-              onUpdatePriority={onUpdatePriority}
-              getPriorityColor={getPriorityColor}
-              getPriorityTextColor={getPriorityTextColor}
-            />
-          </div>
         </div>
       </div>
     </div>
@@ -542,20 +435,10 @@ function UnscheduledTask({
 
 function DroppableUnscheduled({
   todos,
-  onToggle,
-  onUpdatePriority,
-  getPriorityColor,
-  getPriorityTextColor,
-  editingPriority,
-  setEditingPriority
+  onToggle
 }: {
   todos: Todo[];
   onToggle: (id: string) => void;
-  onUpdatePriority: (id: string, priority: 'high' | 'medium' | 'low') => void;
-  getPriorityColor: (priority: 'high' | 'medium' | 'low') => string;
-  getPriorityTextColor: (priority: 'high' | 'medium' | 'low') => string;
-  editingPriority: string | null;
-  setEditingPriority: (id: string | null) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: 'unscheduled',
@@ -582,11 +465,6 @@ function DroppableUnscheduled({
               key={todo.id}
               todo={todo}
               onToggle={onToggle}
-              onUpdatePriority={onUpdatePriority}
-              getPriorityColor={getPriorityColor}
-              getPriorityTextColor={getPriorityTextColor}
-              editingPriority={editingPriority}
-              setEditingPriority={setEditingPriority}
             />
           ))}
         </SortableContext>
@@ -596,81 +474,6 @@ function DroppableUnscheduled({
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-function PriorityButton({
-  todo,
-  editingPriority,
-  setEditingPriority,
-  onUpdatePriority,
-  getPriorityColor,
-  getPriorityTextColor
-}: {
-  todo: Todo;
-  editingPriority: string | null;
-  setEditingPriority: (id: string | null) => void;
-  onUpdatePriority: (id: string, priority: 'high' | 'medium' | 'low') => void;
-  getPriorityColor: (priority: 'high' | 'medium' | 'low') => string;
-  getPriorityTextColor: (priority: 'high' | 'medium' | 'low') => string;
-}) {
-  return (
-    <div className="relative" data-priority-dropdown>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          console.log('Priority button clicked for todo:', todo.id, 'Current editingPriority:', editingPriority);
-          setEditingPriority(editingPriority === todo.id ? null : todo.id);
-        }}
-        className={`flex items-center space-x-0.5 px-0.5 py-0.5 rounded-full text-xs font-medium border transition-all hover:shadow-sm cursor-pointer ${getPriorityTextColor(todo.priority)} bg-opacity-20 border-current max-w-fit`}
-        style={{ pointerEvents: 'auto', zIndex: 1000, position: 'relative' }}
-      >
-        <div className={`w-0.5 h-0.5 rounded-full ${getPriorityColor(todo.priority)}`}></div>
-        <span className="capitalize text-xs">{todo.priority === 'high' ? 'H' : todo.priority === 'medium' ? 'M' : 'L'}</span>
-        <svg className="w-0.5 h-0.5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-      
-      {editingPriority === todo.id && (
-        <div className="absolute top-8 left-0 bg-white border border-gray-200 rounded-lg shadow-lg z-30 min-w-[120px]" style={{ display: 'block' }}>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onUpdatePriority(todo.id, 'high');
-              setEditingPriority(null);
-            }}
-            className="w-full px-3 py-2 text-left text-sm hover:bg-red-50 text-red-700 flex items-center space-x-2 rounded-t-lg"
-          >
-            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-            <span>High</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onUpdatePriority(todo.id, 'medium');
-              setEditingPriority(null);
-            }}
-            className="w-full px-3 py-2 text-left text-sm hover:bg-yellow-50 text-yellow-700 flex items-center space-x-2"
-          >
-            <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-            <span>Medium</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onUpdatePriority(todo.id, 'low');
-              setEditingPriority(null);
-            }}
-            className="w-full px-3 py-2 text-left text-sm hover:bg-green-50 text-green-700 flex items-center space-x-2 rounded-b-lg"
-          >
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <span>Low</span>
-          </button>
-        </div>
-      )}
     </div>
   );
 }
