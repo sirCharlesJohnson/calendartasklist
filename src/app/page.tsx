@@ -16,7 +16,7 @@ export default function Home() {
   const [activeId, setActiveId] = useState<string | null>(null);
   
   // Use Supabase hook for todos
-  const { todos, loading, error, addTodo: addTodoToDb, updateTodo } = useTodos();
+  const { todos, loading, error, addTodo: addTodoToDb, updateTodo, deleteTodo: deleteTodoFromDb } = useTodos();
 
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -70,6 +70,12 @@ export default function Home() {
     const todo = todos.find(t => t.id === id);
     if (todo) {
       await updateTodo(id, { completed: !todo.completed });
+    }
+  };
+
+  const deleteTodo = async (id: string) => {
+    if (confirm('Are you sure you want to delete this task?')) {
+      await deleteTodoFromDb(id);
     }
   };
 
@@ -248,6 +254,7 @@ export default function Home() {
                     day={day}
                     todos={getTodosForDay(day)}
                     onToggle={toggleTodo}
+                    onDelete={deleteTodo}
                   />
                 </div>
               ))}
@@ -258,6 +265,7 @@ export default function Home() {
           <DroppableUnscheduled
             todos={getUnscheduledTodos()}
             onToggle={toggleTodo}
+            onDelete={deleteTodo}
           />
 
           <DragOverlay>
@@ -276,11 +284,13 @@ export default function Home() {
 function DroppableDay({
   day,
   todos,
-  onToggle
+  onToggle,
+  onDelete
 }: {
   day: Date;
   todos: Todo[];
   onToggle: (id: string) => void;
+  onDelete: (id: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `day-${day.toDateString()}`,
@@ -305,6 +315,7 @@ function DroppableDay({
             key={todo.id}
             todo={todo}
             onToggle={onToggle}
+            onDelete={onDelete}
             targetDate={day}
           />
         ))}
@@ -316,10 +327,12 @@ function DroppableDay({
 function SortableTask({ 
   todo, 
   onToggle, 
+  onDelete,
   targetDate
 }: {
   todo: Todo;
   onToggle: (id: string) => void;
+  onDelete: (id: string) => void;
   targetDate: Date;
 }) {
   const {
@@ -345,7 +358,7 @@ function SortableTask({
         <div
           ref={setNodeRef}
           style={style}
-          className={`bg-white rounded-lg border border-gray-200 p-0.5 md:p-3 hover:shadow-md transition-all ${
+          className={`group bg-white rounded-lg border border-gray-200 p-0.5 md:p-3 hover:shadow-md transition-all ${
             isDragging ? 'opacity-50 shadow-lg' : ''
           } ${todo.completed ? 'opacity-60' : ''}`}
         >
@@ -369,6 +382,20 @@ function SortableTask({
               {todo.text}
             </div>
         </div>
+        {/* Delete button - always visible on mobile, hover on desktop */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onDelete(todo.id);
+          }}
+          className="opacity-0 md:group-hover:opacity-100 md:opacity-0 hover:opacity-100 transition-opacity duration-200 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
+          title="Delete task"
+        >
+          <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
       </div>
     </div>
   );
@@ -376,10 +403,12 @@ function SortableTask({
 
 function UnscheduledTask({
   todo,
-  onToggle
+  onToggle,
+  onDelete
 }: {
   todo: Todo;
   onToggle: (id: string) => void;
+  onDelete: (id: string) => void;
 }) {
   const {
     attributes,
@@ -404,7 +433,7 @@ function UnscheduledTask({
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-white rounded-lg border border-gray-200 p-0.5 md:p-3 hover:shadow-md transition-all cursor-move ${
+      className={`group bg-white rounded-lg border border-gray-200 p-0.5 md:p-3 hover:shadow-md transition-all cursor-move ${
         isDragging ? 'opacity-50 shadow-lg' : ''
       } ${todo.completed ? 'opacity-60' : ''}`}
     >
@@ -428,6 +457,20 @@ function UnscheduledTask({
             {todo.text}
           </div>
         </div>
+        {/* Delete button - always visible on mobile, hover on desktop */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onDelete(todo.id);
+          }}
+          className="opacity-0 md:group-hover:opacity-100 md:opacity-0 hover:opacity-100 transition-opacity duration-200 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
+          title="Delete task"
+        >
+          <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
       </div>
     </div>
   );
@@ -435,10 +478,12 @@ function UnscheduledTask({
 
 function DroppableUnscheduled({
   todos,
-  onToggle
+  onToggle,
+  onDelete
 }: {
   todos: Todo[];
   onToggle: (id: string) => void;
+  onDelete: (id: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: 'unscheduled',
@@ -465,6 +510,7 @@ function DroppableUnscheduled({
               key={todo.id}
               todo={todo}
               onToggle={onToggle}
+              onDelete={onDelete}
             />
           ))}
         </SortableContext>
