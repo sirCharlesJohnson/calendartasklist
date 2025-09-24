@@ -196,7 +196,7 @@ export default function Home() {
                     setTaskTime('');
                   }
                 }}
-                className="w-12 px-2 py-2 md:px-3 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base text-center"
+                className="w-16 px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base text-center"
                 placeholder="12"
               />
               <span className="text-gray-500">:</span>
@@ -211,7 +211,7 @@ export default function Home() {
                   const hour = taskTime ? taskTime.split(':')[0] : '12';
                   setTaskTime(`${hour}:${minute}`);
                 }}
-                className="w-12 px-2 py-2 md:px-3 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base text-center"
+                className="w-16 px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base text-center"
                 placeholder="00"
               />
               <select
