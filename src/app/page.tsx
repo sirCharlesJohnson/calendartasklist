@@ -178,13 +178,59 @@ export default function Home() {
               className="px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
               aria-label="Task due date"
             />
-            <input
-              type="time"
-              value={taskTime}
-              onChange={(e) => setTaskTime(e.target.value)}
-              className="px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
-              aria-label="Task time"
-            />
+            <div className="flex items-center space-x-1">
+              <input
+                type="number"
+                min="1"
+                max="12"
+                value={taskTime ? parseInt(taskTime.split(':')[0]) % 12 || 12 : ''}
+                onChange={(e) => {
+                  const hour = e.target.value;
+                  const minute = taskTime ? taskTime.split(':')[1] : '00';
+                  const ampm = taskTime ? (parseInt(taskTime.split(':')[0]) >= 12 ? 'PM' : 'AM') : 'AM';
+                  if (hour) {
+                    const hour24 = ampm === 'PM' && parseInt(hour) !== 12 ? parseInt(hour) + 12 : 
+                                  ampm === 'AM' && parseInt(hour) === 12 ? 0 : parseInt(hour);
+                    setTaskTime(`${hour24.toString().padStart(2, '0')}:${minute}`);
+                  } else {
+                    setTaskTime('');
+                  }
+                }}
+                className="w-12 px-2 py-2 md:px-3 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base text-center"
+                placeholder="12"
+              />
+              <span className="text-gray-500">:</span>
+              <input
+                type="number"
+                min="0"
+                max="59"
+                step="15"
+                value={taskTime ? taskTime.split(':')[1] : ''}
+                onChange={(e) => {
+                  const minute = e.target.value.padStart(2, '0');
+                  const hour = taskTime ? taskTime.split(':')[0] : '12';
+                  setTaskTime(`${hour}:${minute}`);
+                }}
+                className="w-12 px-2 py-2 md:px-3 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base text-center"
+                placeholder="00"
+              />
+              <select
+                value={taskTime ? (parseInt(taskTime.split(':')[0]) >= 12 ? 'PM' : 'AM') : 'AM'}
+                onChange={(e) => {
+                  const ampm = e.target.value;
+                  const hour = taskTime ? parseInt(taskTime.split(':')[0]) : 12;
+                  const minute = taskTime ? taskTime.split(':')[1] : '00';
+                  const hour12 = ampm === 'PM' && hour !== 12 ? hour + 12 : 
+                                ampm === 'AM' && hour === 12 ? 0 : hour;
+                  setTaskTime(`${hour12.toString().padStart(2, '0')}:${minute}`);
+                }}
+                className="px-2 py-2 md:px-3 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
+                aria-label="AM/PM"
+              >
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
             <button
               onClick={addTodo}
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 md:py-3 md:px-8 rounded-lg transition-colors text-sm md:text-lg"
@@ -393,7 +439,12 @@ function SortableTask({
             </div>
             {todo.time && (
               <div className="text-xs text-gray-500 mt-0.5">
-                {todo.time}
+                {(() => {
+                  const [hour, minute] = todo.time.split(':');
+                  const hour12 = parseInt(hour) % 12 || 12;
+                  const ampm = parseInt(hour) >= 12 ? 'PM' : 'AM';
+                  return `${hour12}:${minute} ${ampm}`;
+                })()}
               </div>
             )}
         </div>
@@ -473,7 +524,12 @@ function UnscheduledTask({
           </div>
           {todo.time && (
             <div className="text-xs text-gray-500 mt-0.5">
-              {todo.time}
+              {(() => {
+                const [hour, minute] = todo.time.split(':');
+                const hour12 = parseInt(hour) % 12 || 12;
+                const ampm = parseInt(hour) >= 12 ? 'PM' : 'AM';
+                return `${hour12}:${minute} ${ampm}`;
+              })()}
             </div>
           )}
         </div>
