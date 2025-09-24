@@ -24,3 +24,25 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Force mobile-first responsive behavior */
+@media (max-width: 768px) {
+  .mobile-compact {
+    padding: 0.125rem !important;
+    margin: 0.125rem !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .mobile-text-xs {
+    font-size: 0.625rem !important;
+    line-height: 0.75rem !important;
+  }
+  
+  .mobile-p-0 {
+    padding: 0 !important;
+  }
+  
+  .mobile-min-h-0 {
+    min-height: 0 !important;
+  }
+}
