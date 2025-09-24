@@ -183,9 +183,9 @@ export default function Home() {
                 type="number"
                 min="1"
                 max="12"
-                value={taskTime ? parseInt(taskTime.split(':')[0]) % 12 || 12 : ''}
+                value={taskTime ? (parseInt(taskTime.split(':')[0]) % 12 || 12).toString().padStart(2, '0') : ''}
                 onChange={(e) => {
-                  const hour = e.target.value;
+                  const hour = e.target.value.padStart(2, '0');
                   const minute = taskTime ? taskTime.split(':')[1] : '00';
                   const ampm = taskTime ? (parseInt(taskTime.split(':')[0]) >= 12 ? 'PM' : 'AM') : 'AM';
                   if (hour) {
@@ -443,7 +443,7 @@ function SortableTask({
                   const [hour, minute] = todo.time.split(':');
                   const hour12 = parseInt(hour) % 12 || 12;
                   const ampm = parseInt(hour) >= 12 ? 'PM' : 'AM';
-                  return `${hour12}:${minute} ${ampm}`;
+                  return `${hour12.toString().padStart(2, '0')}:${minute} ${ampm}`;
                 })()}
               </div>
             )}
@@ -528,7 +528,7 @@ function UnscheduledTask({
                 const [hour, minute] = todo.time.split(':');
                 const hour12 = parseInt(hour) % 12 || 12;
                 const ampm = parseInt(hour) >= 12 ? 'PM' : 'AM';
-                return `${hour12}:${minute} ${ampm}`;
+                return `${hour12.toString().padStart(2, '0')}:${minute} ${ampm}`;
               })()}
             </div>
           )}
