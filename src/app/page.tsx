@@ -212,8 +212,8 @@ export default function Home() {
               Add Task
             </button>
           </div>
-          {/* Debug info */}
-          <div className="mt-4 p-2 bg-gray-100 rounded text-sm">
+          {/* Debug info - hidden on mobile */}
+          <div className="hidden md:block mt-4 p-2 bg-gray-100 rounded text-sm">
             <div>Editing Priority: {editingPriority || 'None'}</div>
             <div>Total Todos: {todos.length}</div>
             <div>Unscheduled: {getUnscheduledTodos().length}</div>
@@ -425,7 +425,8 @@ function SortableTask({
           } ${todo.completed ? 'opacity-60' : ''}`}
         >
       <div className="flex items-center space-x-0.5">
-        <div onClick={(e) => e.stopPropagation()}>
+        {/* Hide checkbox on mobile, show on desktop */}
+        <div onClick={(e) => e.stopPropagation()} className="hidden md:block">
           <Checkbox
             checked={todo.completed}
             onCheckedChange={() => onToggle(todo.id)}
@@ -442,7 +443,8 @@ function SortableTask({
             >
               {todo.text}
             </div>
-            <div className="flex items-center justify-between mt-0 w-full">
+            {/* Hide priority button on mobile, show on desktop */}
+            <div className="hidden md:flex items-center justify-between mt-0 w-full">
             <PriorityButton
               todo={todo}
               editingPriority={editingPriority}
@@ -503,7 +505,8 @@ function UnscheduledTask({
       } ${todo.completed ? 'opacity-60' : ''}`}
     >
       <div className="flex items-center space-x-1">
-        <div onClick={(e) => e.stopPropagation()}>
+        {/* Hide checkbox on mobile, show on desktop */}
+        <div onClick={(e) => e.stopPropagation()} className="hidden md:block">
           <Checkbox
             checked={todo.completed}
             onCheckedChange={() => onToggle(todo.id)}
@@ -520,7 +523,8 @@ function UnscheduledTask({
           >
             {todo.text}
           </div>
-          <div className="flex items-center justify-between mt-0">
+          {/* Hide priority button on mobile, show on desktop */}
+          <div className="hidden md:flex items-center justify-between mt-0">
             <PriorityButton
               todo={todo}
               editingPriority={editingPriority}
