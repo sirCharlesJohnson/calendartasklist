@@ -13,6 +13,7 @@ export default function Home() {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [newTodo, setNewTodo] = useState('');
   const [taskDate, setTaskDate] = useState('');
+  const [taskTime, setTaskTime] = useState('');
   const [activeId, setActiveId] = useState<string | null>(null);
   
   // Use Supabase hook for todos
@@ -58,11 +59,13 @@ export default function Home() {
         text: newTodo.trim(),
         completed: false,
         date: todoDate,
+        time: taskTime || null,
         priority: 'medium'
       };
       await addTodoToDb(todo);
       setNewTodo('');
       setTaskDate('');
+      setTaskTime('');
     }
   };
 
@@ -174,6 +177,13 @@ export default function Home() {
               onChange={(e) => setTaskDate(e.target.value)}
               className="px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
               aria-label="Task due date"
+            />
+            <input
+              type="time"
+              value={taskTime}
+              onChange={(e) => setTaskTime(e.target.value)}
+              className="px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
+              aria-label="Task time"
             />
             <button
               onClick={addTodo}
@@ -381,6 +391,11 @@ function SortableTask({
             >
               {todo.text}
             </div>
+            {todo.time && (
+              <div className="text-xs text-gray-500 mt-0.5">
+                {todo.time}
+              </div>
+            )}
         </div>
         {/* Delete button - always visible on mobile, hover on desktop */}
         <button
@@ -456,6 +471,11 @@ function UnscheduledTask({
           >
             {todo.text}
           </div>
+          {todo.time && (
+            <div className="text-xs text-gray-500 mt-0.5">
+              {todo.time}
+            </div>
+          )}
         </div>
         {/* Delete button - always visible on mobile, hover on desktop */}
         <button

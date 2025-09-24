@@ -6,6 +6,7 @@ export interface Todo {
   text: string
   completed: boolean
   date: Date | null
+  time: string | null
   priority: 'high' | 'medium' | 'low'
 }
 
@@ -19,7 +20,8 @@ export function useTodos() {
     id: String(row.id),
     text: String(row.text),
     completed: Boolean(row.completed),
-    date: row.date ? new Date(String(row.date)) : null,
+    date: row.date ? new Date(String(row.date) + 'T00:00:00') : null, // Fix timezone issue
+    time: row.time ? String(row.time) : null,
     priority: (String(row.priority || 'medium') as 'high' | 'medium' | 'low')
   })
 
@@ -29,6 +31,7 @@ export function useTodos() {
     text: todo.text,
     completed: todo.completed,
     date: todo.date ? todo.date.toISOString().split('T')[0] : null,
+    time: todo.time,
     priority: todo.priority
   })
 

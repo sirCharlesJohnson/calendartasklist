@@ -27,20 +27,22 @@ export interface Database {
   public: {
     Tables: {
       todos: {
-        Row: {
-          id: string
-          text: string
-          completed: boolean
-          date: string | null
-          priority: 'high' | 'medium' | 'low'
-          created_at: string
-          updated_at: string
-        }
+               Row: {
+                 id: string
+                 text: string
+                 completed: boolean
+                 date: string | null
+                 time: string | null
+                 priority: 'high' | 'medium' | 'low'
+                 created_at: string
+                 updated_at: string
+               }
         Insert: {
           id?: string
           text: string
           completed?: boolean
           date?: string | null
+          time?: string | null
           priority?: 'high' | 'medium' | 'low'
           created_at?: string
           updated_at?: string
@@ -50,6 +52,7 @@ export interface Database {
           text?: string
           completed?: boolean
           date?: string | null
+          time?: string | null
           priority?: 'high' | 'medium' | 'low'
           created_at?: string
           updated_at?: string
